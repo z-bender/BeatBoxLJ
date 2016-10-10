@@ -1,6 +1,8 @@
 package ru.bender.learnjava.beatbox;
 
 import javax.sound.midi.*;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by bender on 09.10.2016.
@@ -11,20 +13,32 @@ public class MiniMusicPlayer1{
         player1.go();
     }
 
+    JFrame frame;
+    MusicVisualizatorPanel vizualizator;
+
     private void go() {
+        frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 300);
+        frame.setVisible(true);
+        vizualizator = new MusicVisualizatorPanel();
+        frame.getContentPane().add(BorderLayout.CENTER, vizualizator);
+
+
         try {
             Sequencer sequencer = MidiSystem.getSequencer();
             sequencer.open();
 
             int[] eventIWant = {127};
-            sequencer.addControllerEventListener(new SequencerControllerEventListener(), eventIWant);
+            sequencer.addControllerEventListener(vizualizator, eventIWant);
 
             Sequence seq = new Sequence(Sequence.PPQ, 4);
             Track track = seq.createTrack();
             for (int i = 5; i < 61; i+= 4) {
-                track.add(makeEvent(144, 1, i, 100, i));
+                int randomNote = (int) (Math.random() * 100) + 1;
+                track.add(makeEvent(144, 1, randomNote, 100, i));
                 track.add(makeEvent(176, 1, 127, 0, i));
-                track.add(makeEvent(128, 1, i, 100, i + 2));
+                track.add(makeEvent(128, 1, randomNote, 100, i + 2));
             }
 
             sequencer.setSequence(seq);
@@ -49,11 +63,4 @@ public class MiniMusicPlayer1{
         return midiEvent;
     }
 
-
-    class SequencerControllerEventListener implements ControllerEventListener{
-        @Override
-        public void controlChange(ShortMessage event) {
-            System.out.println("la");
-        }
-    }
 }
