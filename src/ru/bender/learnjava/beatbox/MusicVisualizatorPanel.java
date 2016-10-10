@@ -1,5 +1,7 @@
 package ru.bender.learnjava.beatbox;
 
+import ru.bender.learnjava.guitests.MyDrawPanel;
+
 import javax.sound.midi.ControllerEventListener;
 import javax.sound.midi.ShortMessage;
 import javax.swing.*;

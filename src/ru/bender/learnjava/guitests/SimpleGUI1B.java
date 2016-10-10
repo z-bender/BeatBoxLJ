@@ -1,4 +1,4 @@
-package ru.bender.learnjava.beatbox;
+package ru.bender.learnjava.guitests;
 
 
 import javax.swing.*;
