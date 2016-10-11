@@ -1,13 +1,13 @@
 package ru.bender.learnjava.beatbox2;
 
-import javax.sound.midi.Sequence;
-import javax.sound.midi.Sequencer;
-import javax.sound.midi.Track;
+import javax.sound.midi.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
+import static ru.bender.learnjava.beatbox.MiniMusicPlayer1.makeEvent;
 
 /**
  * Created by bender on 11.10.2016.
@@ -79,36 +79,100 @@ public class BeatBox {
             mainPanel.add(c);
         }
 
+        setUpMidi();
+        
         theFrame.setBounds(50, 50, 300, 300);
         theFrame.pack();
         theFrame.setVisible(true);
     }
 
+    public void setUpMidi() {
+        try {
+            sequencer = MidiSystem.getSequencer();
+            sequencer.open();
+            sequence = new Sequence(Sequence.PPQ, 4);
+            track = sequence.createTrack();
+            sequencer.setTempoInBPM(120);
+        } catch (MidiUnavailableException e) {
+            e.printStackTrace();
+        } catch (InvalidMidiDataException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void buildTrackAndStart() {
+        int[] trackList = null;
+
+        sequence.deleteTrack(track);
+        track = sequence.createTrack();
+
+        for (int i = 0; i < 16; i++) {
+            trackList = new int[16];
+            int key = instruments[i];
+
+            for (int j = 0; j < 16; j++) {
+                JCheckBox jc = (JCheckBox) checkBoxList.get(j + (16 * i));
+                if (jc.isSelected()) {
+                    trackList[j] = key;
+                } else {
+                    trackList[j] = 0;
+                }
+            }
+            makeTracks(trackList);
+            track.add(makeEvent(176, 1, 127, 0, 16));
+        }
+
+        track.add(makeEvent(192, 9, 1, 9, 15));
+
+        try {
+            sequencer.setSequence(sequence);
+            sequencer.setLoopCount(Sequencer.LOOP_CONTINUOUSLY);
+            sequencer.start();
+            sequencer.setTempoInBPM(120);
+        } catch (InvalidMidiDataException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void makeTracks(int[] list) {
+        for (int i = 0; i < 16; i++) {
+            int key = list[i];
+            if (key != 0) {
+                track.add(makeEvent(144, 9, key, 100, i));
+                track.add(makeEvent(128, 9, key, 100, i + 1));
+            }
+        }
+    }
+
     class MyStartListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            buildTrackAndStart();
         }
     }
 
     class MyStopListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            sequencer.stop();
         }
     }
 
     class MyUpTempoListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            float tempoFactor = sequencer.getTempoFactor();
+            sequencer.setTempoFactor((float) (tempoFactor * 1.03));
         }
     }
 
     class MyDownTempoListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            float tempoFactor = sequencer.getTempoFactor();
+            sequencer.setTempoFactor((float) (tempoFactor * .97));
         }
     }
 
