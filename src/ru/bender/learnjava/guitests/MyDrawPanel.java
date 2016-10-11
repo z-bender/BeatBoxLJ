@@ -39,7 +39,7 @@ public class MyDrawPanel extends JPanel {
 
     }
 
-    static Color getRandColor() {
+    public static Color getRandColor() {
         int red = (int) (Math.random() * 255);
         int green = (int) (Math.random() * 255);
         int blue = (int) (Math.random() * 255);
