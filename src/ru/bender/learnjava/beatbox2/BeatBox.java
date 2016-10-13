@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.io.*;
 
 import static ru.bender.learnjava.beatbox.MiniMusicPlayer1.makeEvent;
 
@@ -55,6 +56,11 @@ public class BeatBox {
         JButton downTempo = new JButton("Down tempo");
         stop.addActionListener(new MyDownTempoListener());
         buttonBox.add(downTempo);
+
+        JButton save = new JButton("Save");
+        save.addActionListener(new MySaveListener());
+        buttonBox.add(save);
+
 
         Box nameBox = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < instrumentNames.length; i++) {
@@ -146,6 +152,16 @@ public class BeatBox {
         }
     }
 
+    private void serializeObject(Object object, String fileName) {
+        try {
+            FileOutputStream fileStream = new FileOutputStream(fileName);
+            ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);
+            objectStream.writeObject(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     class MyStartListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -173,6 +189,13 @@ public class BeatBox {
         public void actionPerformed(ActionEvent e) {
             float tempoFactor = sequencer.getTempoFactor();
             sequencer.setTempoFactor((float) (tempoFactor * .97));
+        }
+    }
+
+    class MySaveListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            serializeObject(sequencer, "sequencer.save");
         }
     }
 
