@@ -61,6 +61,10 @@ public class BeatBox {
         save.addActionListener(new MySaveListener());
         buttonBox.add(save);
 
+        JButton load = new JButton("Load");
+        save.addActionListener(new MyLoadListener());
+        buttonBox.add(load);
+
 
         Box nameBox = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < instrumentNames.length; i++) {
@@ -162,6 +166,19 @@ public class BeatBox {
         }
     }
 
+    private ArrayList<JCheckBox> deserializeCheckBoxList(String fileName) {
+        try {
+            FileInputStream fileStream = new FileInputStream(fileName);
+            ObjectInputStream objectStream = new ObjectInputStream(fileStream);
+            return (ArrayList<JCheckBox>)objectStream.readObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     class MyStartListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -195,7 +212,14 @@ public class BeatBox {
     class MySaveListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            serializeObject(sequencer, "sequencer.save");
+            serializeObject(checkBoxList, "sequencer.save");
+        }
+    }
+
+    class MyLoadListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            checkBoxList = deserializeCheckBoxList("sequencer.save");
         }
     }
 
