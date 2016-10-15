@@ -1,6 +1,5 @@
 package ru.bender.learnjava.guitests;
 
-import com.sun.prism.paint.Gradient;
 
 import javax.swing.*;
 import java.awt.*;
