@@ -14,6 +14,8 @@ import static ru.bender.learnjava.beatbox.MiniMusicPlayer1.makeEvent;
  * Created by bender on 11.10.2016.
  */
 public class BeatBox {
+    private static final String SER_CHECKBOXES_STATES  = "serCheckBoxes.txt";
+
     JFrame theFrame;
     JPanel mainPanel;
     ArrayList<JCheckBox> checkBoxList;
@@ -144,8 +146,6 @@ public class BeatBox {
             e.printStackTrace();
         }
 
-
-        serializeObject(checkBoxList, "sequencer2.save");
     }
 
     private void makeTracks(int[] list) {
@@ -158,9 +158,9 @@ public class BeatBox {
         }
     }
 
-    private void serializeObject(ArrayList<JCheckBox> checkBoxes, String fileName) {
+    private void serializeObject(Object checkBoxes, File file) {
         try {
-            FileOutputStream fileStream = new FileOutputStream(fileName);
+            FileOutputStream fileStream = new FileOutputStream(file);
             ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);
             objectStream.writeObject(checkBoxes);
         } catch (IOException e) {
@@ -168,17 +168,28 @@ public class BeatBox {
         }
     }
 
-    private ArrayList<JCheckBox> deserializeCheckBoxList(String fileName) {
+    private Object deserializeCheckBoxList(File file) {
         try {
-            FileInputStream fileStream = new FileInputStream(fileName);
+            FileInputStream fileStream = new FileInputStream(file);
             ObjectInputStream objectStream = new ObjectInputStream(fileStream);
-            return (ArrayList<JCheckBox>)objectStream.readObject();
+            return objectStream.readObject();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private File chooseFile(boolean isSave){
+        JFileChooser fileChooser = new JFileChooser();
+        if (isSave) {
+            fileChooser.showSaveDialog(theFrame);
+        }
+        else {
+            fileChooser.showOpenDialog(theFrame);
+        }
+        return fileChooser.getSelectedFile();
     }
 
     class MyStartListener implements ActionListener {
@@ -214,15 +225,24 @@ public class BeatBox {
     class MySaveListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            serializeObject(checkBoxList, "sequencer.save");
+            boolean[] checkBoxesState = new boolean[256];
+            for (int i = 0; i < checkBoxesState.length; i++) {
+                if (checkBoxList.get(i).isSelected()) {
+                    checkBoxesState[i] = true;
+                }
+            }
+            serializeObject(checkBoxesState, chooseFile(true));
+
         }
     }
 
     class MyLoadListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            checkBoxList = deserializeCheckBoxList("sequencer2.save");
-            theFrame.repaint();
+            boolean[] checkBoxesStates = (boolean[]) deserializeCheckBoxList(chooseFile(false));
+            for (int i = 0; i < checkBoxesStates.length; i++) {
+                checkBoxList.get(i).setSelected(checkBoxesStates[i]);
+            }
         }
     }
 
