@@ -1,5 +1,7 @@
 package ru.bender.learnjava.guitests;
 
+import com.sun.org.apache.xml.internal.serialize.LineSeparator;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -10,7 +12,9 @@ import java.io.*;
  * Created by bender on 16.10.16.
  */
 public class SerializabledTest {
-    private static final String FILE_NAME = "mySerObj.txt";
+    private static final String SER_FILE_NAME = "mySerObj.txt";
+    private static final String FILE_NAME2 = "saveInputs.txt";
+    private static final String SPLITER = "/";
 
     public static void main(String[] args) {
         SerializabledTest app = new SerializabledTest();
@@ -80,21 +84,65 @@ public class SerializabledTest {
         return result;
     }
 
+    private void saveInputsToFile(String fileName) {
+        File file = new File(fileName);
+        saveInputsToFile(file);
+    }
+
+    private void saveInputsToFile(File file) {
+        try {
+//            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            FileWriter bw = new FileWriter(file, true);
+            bw.append(textField1.getText() + SPLITER + textField2.getText() + System.lineSeparator());
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String loadInputsFromFile(String fileName) {
+        File file = new File(fileName);
+        return loadInputsFromFile(file);
+    }
+
+    private String loadInputsFromFile(File file) {
+        String line = null;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            line = br.readLine();
+        } catch (IOException e) {
+        }
+        return line;
+    }
 
     class SaveBtnListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            MySerializableObject serObj = new MySerializableObject(textField1.getText(), textField2.getText());
-            saveObject(serObj, FILE_NAME);
+//            MySerializableObject serObj = new MySerializableObject(textField1.getText(), textField2.getText());
+//            saveObject(serObj, SER_FILE_NAME);
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.showSaveDialog(frame);
+            saveInputsToFile(fileChooser.getSelectedFile());
+
         }
     }
 
     class LoadBtnListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            MySerializableObject serObj = getSerObj(FILE_NAME);
-            textField1.setText(serObj.getX());
-            textField2.setText(serObj.getY());
+//            MySerializableObject serObj = getSerObj(SER_FILE_NAME);
+//            textField1.setText(serObj.getX());
+//            textField2.setText(serObj.getY());
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.showOpenDialog(frame);
+
+            String loadedLine = loadInputsFromFile(fileChooser.getSelectedFile());
+            if (!loadedLine.isEmpty()) {
+                String[] inputs = loadedLine.split(SPLITER);
+                textField1.setText(inputs[0]);
+                textField2.setText(inputs[1]);
+            }
         }
     }
 
