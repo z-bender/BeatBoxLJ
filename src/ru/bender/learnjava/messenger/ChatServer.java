@@ -1,5 +1,6 @@
 package ru.bender.learnjava.messenger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -31,13 +32,41 @@ public class ChatServer {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                Result givedMessage = ChatHelper.giveMessageFromSocket(socket);
-                if (!givedMessage.isError()) {
-                    ChatHelper.sendMessageToSocket(socket, "Сообщение отправлено");
-                }
+                System.out.println("Подключился клиент - " + socket.getPort());
+                Thread clientReader = new Thread(new ClientReader(socket));
+                clientReader.start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+
+    class ClientReader implements Runnable{
+        Socket socketToClient;
+        BufferedReader bufferedReader;
+
+        public ClientReader(Socket socketToClient) {
+            this.socketToClient = socketToClient;
+            try {
+                bufferedReader = ChatHelper.getBufferedReaderForSocket(socketToClient);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Ошибка чтения клиента");
+            }
+        }
+
+        @Override
+        public void run() {
+            while (socketToClient.isConnected()) {
+                try {
+                    System.out.println(bufferedReader.readLine());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("Ошибка чтения клиента");
+                }
+            }
+            System.out.println("Клиент отключился");
         }
     }
 }

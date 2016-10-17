@@ -3,7 +3,9 @@ package ru.bender.learnjava.messenger;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
@@ -11,22 +13,23 @@ import java.net.Socket;
  */
 public class ChatClient {
 
+    private static final String SERVER_IP = "127.0.0.1";
+
+    JFrame frame;
+    JTextField messageField;
+    JButton sendButton;
+    Socket socket;
+    BufferedReader bufferedReader;
+    PrintWriter printWriter;
+
     public static void main(String[] args) {
         ChatClient chatClient = new ChatClient();
         chatClient.go();
     }
 
-    private static final String SERVER_IP = "127.0.0.1";
-
-    JFrame frame;
-    Socket socket;
-    JTextField messageField;
-    JButton sendButton;
-
     public ChatClient() {
         makeGui();
     }
-
 
     private void go() {
         connectToServer();
@@ -57,6 +60,8 @@ public class ChatClient {
     private boolean connectToServer() {
         try {
             socket = new Socket(SERVER_IP, ChatServer.SERVER_PORT);
+            bufferedReader = ChatHelper.getBufferedReaderForSocket(socket);
+            printWriter = ChatHelper.getPrintWriterForSocket(socket);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,10 +75,15 @@ public class ChatClient {
     class SendButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            Result result = ChatHelper.sendMessageToSocket(socket, messageField.getText());
-            if (!result.getMessage().isEmpty()) {
-                showMessageDialog(result.getMessage());
+            if(printWriter == null) {
+                showMessageDialog("Отсутствует подключение к серверу");
+                return;
             }
+            printWriter.println(messageField.getText());
+            printWriter.flush();
+
+            messageField.setText("");
+            messageField.requestFocus();
         }
     }
 

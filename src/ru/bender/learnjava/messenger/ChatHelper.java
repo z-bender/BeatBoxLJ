@@ -7,7 +7,20 @@ import java.net.Socket;
  * Created by bender on 16.10.16.
  */
 public class ChatHelper {
-    
+
+    static PrintWriter getPrintWriterForSocket(Socket socket) throws IOException {
+        if (socket == null) {
+            return null;
+        }
+        return new PrintWriter(socket.getOutputStream());
+    }
+
+    static BufferedReader getBufferedReaderForSocket(Socket socket) throws IOException {
+            InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
+            return new BufferedReader(inputStreamReader);
+    }
+
+
     static Result sendMessageToSocket(Socket socket, String text) {
         if (socket == null) {
             return new Result(true, "Отстутствует соединение с сокетом");
