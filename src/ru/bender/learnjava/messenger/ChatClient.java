@@ -1,6 +1,7 @@
 package ru.bender.learnjava.messenger;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -18,9 +19,11 @@ public class ChatClient {
     JFrame frame;
     JTextField messageField;
     JButton sendButton;
+    JTextArea textArea;
     Socket socket;
     BufferedReader bufferedReader;
     PrintWriter printWriter;
+
 
     public static void main(String[] args) {
         ChatClient chatClient = new ChatClient();
@@ -32,7 +35,10 @@ public class ChatClient {
     }
 
     private void go() {
+
         connectToServer();
+        Thread readerThread = new Thread(new ServerReader());
+        readerThread.start();
     }
 
     private void makeGui() {
@@ -42,14 +48,22 @@ public class ChatClient {
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
         messageField = new JTextField(40);
+        messageField.addActionListener(new SendButtonListener());
         panel.add(messageField);
 
         sendButton = new JButton("Send");
         sendButton.addActionListener(new SendButtonListener());
         panel.add(sendButton);
 
-        frame.getContentPane().add(panel);
-        frame.setSize(400, 120);
+        textArea = new JTextArea();
+        JScrollPane textAreaScroll = new JScrollPane(textArea);
+        textAreaScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        textAreaScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        textArea.setEditable(false);
+
+        frame.getContentPane().add(BorderLayout.CENTER, textAreaScroll);
+        frame.getContentPane().add(BorderLayout.SOUTH, panel);
+        frame.setSize(400, 500);
         frame.setVisible(true);
     }
 
@@ -71,11 +85,10 @@ public class ChatClient {
     }
 
 
-
     class SendButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            if(printWriter == null) {
+            if (printWriter == null) {
                 showMessageDialog("Отсутствует подключение к серверу");
                 return;
             }
@@ -84,6 +97,23 @@ public class ChatClient {
 
             messageField.setText("");
             messageField.requestFocus();
+        }
+    }
+
+
+    class ServerReader implements Runnable {
+        @Override
+        public void run() {
+            String message;
+            try {
+                while ((message = bufferedReader.readLine()) != null) {
+                    textArea.append(message + System.lineSeparator());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                showMessageDialog("Ошибка чтения с сервера");
+            }
+
         }
     }
 
